@@ -57,8 +57,28 @@ func (m *Middlewares) AuthenticateJWT(next http.Handler) http.Handler {
 	})
 }
 
+func (m *Middlewares) RequireRole(roles ...string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := r.Context().Value(ClaimsKey).(*Claims)
+			if !ok {
+				http.Error(w, "Failed to retrieve claims", http.StatusUnauthorized)
+				return
+			}
 
+			for _, role := range roles {
+				if claims.Role == role {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
 
+			http.Error(w, "Insufficient permissions", http.StatusForbidden)
+		})
+	}
+}
 
-
-
+func ClaimsFrom(ctx context.Context) (*Claims, bool) {
+	claims, ok := ctx.Value(ClaimsKey).(*Claims)
+	return claims, ok
+}
