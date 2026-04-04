@@ -1,5 +1,5 @@
 -- +migrate Up
-CREATE TABLE financial_records (
+CREATE TABLE IF NOT EXISTS financial_records (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     amount      NUMERIC(15, 2) NOT NULL CHECK (amount > 0),
