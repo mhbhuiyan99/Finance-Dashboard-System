@@ -10,8 +10,11 @@ import (
 	"github.com/mhbhuiyan99/Finance-Dashboard-System/rest"
 
 	recordD "github.com/mhbhuiyan99/Finance-Dashboard-System/record"
+	userD "github.com/mhbhuiyan99/Finance-Dashboard-System/user"
+
 	"github.com/mhbhuiyan99/Finance-Dashboard-System/repo"
 	"github.com/mhbhuiyan99/Finance-Dashboard-System/rest/handlers/record"
+	"github.com/mhbhuiyan99/Finance-Dashboard-System/rest/handlers/user"
 	middleware "github.com/mhbhuiyan99/Finance-Dashboard-System/rest/middlewares"
 )
 
@@ -32,12 +35,19 @@ func Serve() {
 
 	middlewares := middleware.NewMiddlewares(cnf)
 
+	userRepo := repo.NewUserRepo(dbCon)
 	recordRepo := repo.NewRecordRepo(dbCon)
+
+	userSvc := userD.NewService(userRepo)
 	rcdSvc := recordD.NewService(recordRepo)
+
+	userHandler := user.NewHandler(cnf, middlewares, userSvc)
 	recordHandler := record.NewHandler(middlewares, rcdSvc)
+	
 
 	server := rest.NewServer(
 		cnf,
+		userHandler,
 		recordHandler,
 	)
 
